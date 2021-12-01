@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: ccde41a4c9d900c4f82116f1121b187e
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - robot: {fileID: 4271110429065190089, guid: 22a2dd999367d3844b22ea23f6bed054, type: 3}
+  - box: {fileID: 2489423468601162522, guid: bf77270c866991a42befb5aaecf2bfbc, type: 3}
+  - shelf: {fileID: 1610459468726248398, guid: d9276c10c4cb7284ba0555a3848fc43c, type: 3}
+  - floorTile: {fileID: 952152641239740568, guid: 30d61da05df8e7545a26f1d39f419503, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

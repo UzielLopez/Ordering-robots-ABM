@@ -9,8 +9,7 @@ A través del modelado basado en agentes, se creó una simulación donde un grup
 
 ## Requerimientos
 - Python 3.x.x
-- Mesa
-- Flask
-- Numpy
+- Mesa 0.8.9
+- Flask 2.0.2
 - Unity 2020.3.23f1
 - ProBuilder en Unity

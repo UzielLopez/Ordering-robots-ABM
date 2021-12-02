@@ -13,8 +13,6 @@ public class IDManager
     public int[] shelves;
 
 }
-
-
 public class Agent
 {
     public Agent(int id)
@@ -61,8 +59,10 @@ public class SimulationController : MonoBehaviour
 {
     public GameObject robot, box, shelf, floorTile;
     public int k = 10, m = 6, n = 6, timeLimit = 100;
+    private int steps = 0;
+    private bool simulationFinished = false, allBoxesCleared = false;
     private float timer = 0.0f;
-    private float waitTime = 1.0f;
+    private float waitTime = 0.5f;
     private string simulationURL;
     public Dictionary<int, Robot> robots;
     public Dictionary<int, Shelf> shelves;
@@ -81,12 +81,25 @@ public class SimulationController : MonoBehaviour
     void Update()
     {
         timer += Time.deltaTime;
-        if(timer > waitTime)
+        if(timer > waitTime && !simulationFinished)
         {
             StartCoroutine(FetchAgentsData());
             timer = timer - waitTime;
         }
         
+        if(simulationFinished)
+        {
+            if(allBoxesCleared)
+            {
+                Debug.Log("All boxes where put in shelves in" + steps.ToString() + " steps" + "--- Sum of steps taken by all the agents: " + (steps*5).ToString());
+            }
+
+            else
+            {
+                Debug.Log("The robots couldn't place all the boxes in shelves.");
+            }
+            
+        }
     }
 
     void InstantiateAgents(string idsForAgents, string initialState)
@@ -212,10 +225,14 @@ public class SimulationController : MonoBehaviour
                     }
                 }
 
-
+                simulationFinished = System.Convert.ToBoolean(agentData[-1][0]);
+                steps = agentData[-1][1];
+                allBoxesCleared = System.Convert.ToBoolean(agentData[-1][2]);
+                
             }
+            
         }
-
+       
         ProcessAgentData();
 
     }
@@ -225,7 +242,7 @@ public class SimulationController : MonoBehaviour
     {
         foreach(Robot robot in robots.Values)
         {
-            robot.agent3DModel.transform.position = new Vector3(robot.x - + robot.DELTA_X, 0, robot.z + robot.DELTA_Z);
+            robot.agent3DModel.transform.position = new Vector3(robot.x + robot.DELTA_X, 0, robot.z + robot.DELTA_Z);
             if(robot.carryingBox)
             {
                 Vector3 newBoxPosition = robot.agent3DModel.transform.position + new Vector3(robot.BOX_DELTA_X, robot.BOX_DELTA_Y, robot.BOX_DELTA_Z);
@@ -265,7 +282,8 @@ public class SimulationController : MonoBehaviour
         {
             for(int i = 0; i < shelf.deltaBoxes; i++)
             {
-                shelf.box3DModels.Add(Instantiate(box, new Vector3(shelf.x + shelf.BOX_DELTA_X, shelf.BOX_DELTA_Y * (shelf.boxes - 1), shelf.z + shelf.BOX_DELTA_Z), Quaternion.identity));
+                Debug.Log((shelf.BOX_DELTA_Y * (shelf.boxes - 1)).ToString());
+                shelf.box3DModels.Add(Instantiate(box, new Vector3(shelf.x + shelf.BOX_DELTA_X, (shelf.BOX_DELTA_Y * (shelf.boxes - 1)) - (i * shelf.BOX_DELTA_Y), shelf.z + shelf.BOX_DELTA_Z), Quaternion.identity));
             }
         }
     }

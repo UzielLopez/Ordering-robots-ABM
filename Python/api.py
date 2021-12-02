@@ -32,4 +32,4 @@ def next_step(id):
                 
         return 'error: No valid simulation with given id', 404
 
-app.run()
+app.run(threaded=True)

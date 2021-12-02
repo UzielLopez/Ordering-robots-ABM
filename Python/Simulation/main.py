@@ -53,8 +53,20 @@ class Robot(Agent):
         self.stopped = False
         self.target_position = find_closest_box(self.position, self.model.m, self.model.n, self.model.boxes_positions)
         self.camino = a_star(self.position, self.target_position, self.model.m, self.model.n, self.model.shelves_positions)[1:]
-        
-    # We prioritze those shelves that are almost full to try to form as many filled shelves as quickly as possible
+
+
+    """
+    We prioritze those shelves that are almost full to try to form as many filled shelves as quickly as possible,
+    thinking that that's be better from a logistics point of view, although it is not the fastest way to remove
+    all the boxes from the floor.
+    
+    This is where we could make a change to make the robots place all the boxes in shelves faster.
+    This method currently just picks a shelf to fill completley, no matter how far it is from the current robot.
+    If we instead chose the closest shelf to the current robot, no matter how empty it is, the robots would be
+    able to finish their job faster.
+
+    All we'd need to do is to re implement this method to use bfs to find the closest shelf.
+    """
     def find_closest_to_be_filled_shelf(self):
         positions = []
         for position in self.model.shelves_positions:
@@ -67,8 +79,9 @@ class Robot(Agent):
 
         if not self.stopped:
 
-            self.position = self.camino[0]
-            self.camino.pop(0)
+            if len(self.camino) != 0:
+                self.position = self.camino[0]
+                self.camino.pop(0)
 
             if self.position == self.target_position:
                 
@@ -122,8 +135,8 @@ class Robot(Agent):
                             
                             else: #If the box couldn't be placed (because another robot filled the shelf before this robot could place it)
                                 
-                                self.target_position = self.find_closest_to_be_filled_shelf()
                                 tmp_blocks = self.model.shelves_positions.copy()
+                                self.target_position = self.find_closest_to_be_filled_shelf()
                                 tmp_blocks.remove(self.target_position)
                                 self.camino = a_star(self.position, self.target_position, self.model.m, self.model.n, tmp_blocks)[1:]
 
@@ -153,7 +166,6 @@ class Warehouse(Model):
         self.layout_agents()
         self.order_agent_ids()
         self.construct_model_initial_state()
-        #self.construct_model_state()
         self.blocks = set.union(self.boxes_positions, self.shelves_positions)
         
     
@@ -259,6 +271,7 @@ class Warehouse(Model):
                 self.state[str(agent.unique_id)] = [agent.pos[0], agent.pos[1], agent.boxes]
             elif type(agent) == Box:
                 self.state[str(agent.unique_id)] = agent.pos
+        self.state[str(-1)] = [int(self.simulation_finished()), self.steps_taken, int(self.placed_boxes==self.k)]
 
     def order_agent_ids(self):
         for agent in self.scheduler.agents:

@@ -5,7 +5,7 @@ A través del modelado basado en agentes, se creó una simulación donde un grup
 
 - El cerebro de la simulación está escrito en Python con el módulo Mesa
 - La parte graficación de la simulación está hecha en Unity
-- La conexión entre el cerebro y la graficación se da a través de una REST API implementada con Flask en Python.
+- La conexión entre el cerebro y la graficación se da a través de una REST API implementada con Flask-RESTful en Python.
 
 ## Requerimientos
 - Python 3.x.x

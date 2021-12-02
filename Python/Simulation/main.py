@@ -2,9 +2,6 @@ from mesa import Agent, Model
 from mesa.space import MultiGrid
 from mesa.time import RandomActivation
 
-from mesa.visualization.modules import CanvasGrid
-from mesa.visualization.ModularVisualization import ModularServer
-
 from random import randint
 
 from .a_star import a_star
@@ -13,7 +10,6 @@ from .bfs import find_closest_box
 class Shelf(Agent):
     def __init__(self, model, pos):
         super().__init__(model.next_id(), model)
-        self.model = model
         self.position = pos
         self.boxes = 0
         self.filled = False
@@ -58,9 +54,8 @@ class Robot(Agent):
         self.target_position = find_closest_box(self.position, self.model.m, self.model.n, self.model.boxes_positions)
         self.camino = a_star(self.position, self.target_position, self.model.m, self.model.n, self.model.shelves_positions)[1:]
         
-    
     # We prioritze those shelves that are almost full to try to form as many filled shelves as quickly as possible
-    def find_closest_to_be_filled_shelf_position(self):
+    def find_closest_to_be_filled_shelf(self):
         positions = []
         for position in self.model.shelves_positions:
             for content in self.model.grid.iter_cell_list_contents(position):
@@ -83,7 +78,7 @@ class Robot(Agent):
                         if type(content) == Box:
                             self.carrying_box = True
                             content.delete_self_from_model()
-                            self.target_position = self.find_closest_to_be_filled_shelf_position()
+                            self.target_position = self.find_closest_to_be_filled_shelf()
                             tmp_blocks = self.model.shelves_positions.copy()
                             tmp_blocks.remove(self.target_position)
                             self.camino = a_star(self.position, self.target_position, self.model.m, self.model.n, tmp_blocks)[1:]
@@ -127,11 +122,10 @@ class Robot(Agent):
                             
                             else: #If the box couldn't be placed (because another robot filled the shelf before this robot could place it)
                                 
-                                self.target_position = self.find_closest_to_be_filled_shelf_position()
+                                self.target_position = self.find_closest_to_be_filled_shelf()
                                 tmp_blocks = self.model.shelves_positions.copy()
                                 tmp_blocks.remove(self.target_position)
                                 self.camino = a_star(self.position, self.target_position, self.model.m, self.model.n, tmp_blocks)[1:]
-
 
 
             self.model.grid.move_agent(self, self.position)
@@ -148,18 +142,15 @@ class Warehouse(Model):
         self.steps_taken = 0
 
         self.state = {}
-        self.initial_state = {}
         self.ids_by_agent_type = {"robots": [], "shelves": [], "boxes": []}
         
-
         self.grid = MultiGrid(m, n, False)
         self.scheduler = RandomActivation(self)
-        
         
         self.enough_space_for_agents = False
         self.boxes_positions = set()
         self.shelves_positions = set()
-        self.layout_agents() # TODO: Hacer algo si no hay espacio suficiente
+        self.layout_agents()
         self.order_agent_ids()
         self.construct_model_initial_state()
         #self.construct_model_state()
@@ -179,13 +170,11 @@ class Warehouse(Model):
         else:
             return
             
-        
         # Layout shelves
         vertically_or_horizontally = False # Vertically is True, horizontally is False
         if(self.m < self.n):
             vertically_or_horizontally = True
             
-        
         if vertically_or_horizontally:
             for i in range(self.n):
                 pos = (0, i)
@@ -280,35 +269,9 @@ class Warehouse(Model):
             elif type(agent) == Box:
                 self.ids_by_agent_type["boxes"].append(agent.unique_id)
             
-        
     def step(self):
         
         if not self.simulation_finished():
             self.scheduler.step()
             self.construct_model_state()
             self.steps_taken += 1
-        
-
-def agent_portrayal(agent):
-    if type(agent) == Box:
-        portrayal = {"Shape": "rect", "Filled": "true", "Color": "#995943", "w": 0.45, 'h': 0.45, "Layer": 0}
-    elif type(agent) == Robot:
-        portrayal = {"Shape": "circle", "Filled": "true", "Color": "Blue", "r": 0.55, "Layer": 0}
-    elif type(agent) == Shelf:
-        portrayal = {"Shape": "rect", "Filled": "true", "Color": "Gray", "w": 0.45, 'h': 0.45, "Layer": 0}
-    else:
-        portrayal = {}
-
-    return portrayal
-
-"""
-k = 10
-m = 5
-n = 6
-time_limit = 50
-grid = CanvasGrid(agent_portrayal, m, n, 450, 450)
-server = ModularServer(Warehouse, [grid], "Actividad integradora", {'k': k, 'm': m, 'n': n, 'time_limit':time_limit})
-server.port = 8522
-server.launch()
-"""
-

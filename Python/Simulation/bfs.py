@@ -3,7 +3,6 @@ from .node import Node
 # Find the closest box using bfs
 def find_closest_box(start_position, m, n, boxes_positions):
     
-    
     # If there is no boxes left, return a clue to the robot so it can stop moving
     if len(boxes_positions) == 0:
         return (-1, -1)
